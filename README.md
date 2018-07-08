@@ -65,7 +65,18 @@ The response message indicates that the lambda value is ```5af90b68f9051a6fe1b5a
 
 This work is based on the research paper.
 
-[1] Chen, J. (2018). [Hybrid Blockchain and Pseudonymous Authentication for Secure and Trusted IoT Networks](https://flowchain.co/flowchain-AIoTAS18_ACCEPTED.pdf) In: Advances in IoT Architecture and Systems, Los Angeles, California, USA.
+[1] Chen, J. (2018). [Hybrid Blockchain and Pseudonymous Authentication for Secure and Trusted IoT Networks](https://flowchain.co/flowchain-AIoTAS18_ACCEPTED.pdf) In: The 2nd Workshop on Advances in IoT Architecture and Systems, Los Angeles, California, USA.
+
+### How to Cite
+
+```
+@article{flowchain_2018,
+title={Hybrid Blockchain and Pseudonymous Authentication for Secure and Trusted IoT Networks},
+journal={Proceedings of the 2nd Workshop on Workshop on Advances in IoT Architecture and Systems (AIoTAS2018)},
+author={Chen, Jollen},
+year={2018}
+},
+```
 
 ## License
 
