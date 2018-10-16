@@ -348,7 +348,7 @@ client.start({
     },
     {
 	    id: 1,
-	    host: "eth.pool.flowchain.io",
+	    host: "eth-us.pool.flowchain.io",
 	    port: 8008
     },
     {
@@ -561,6 +561,7 @@ var server = http.createServer(function(req, res) {
              wallet: paths[1],
              worker: paths[2]
            };
+           console.log(chalk.red('Worker [' + req.params.worker + '] from ' + req.params.wallet));
            return true;
         }
   
@@ -584,6 +585,10 @@ var server = http.createServer(function(req, res) {
 
       req.on('end', function () {
       // {"id":1,"jsonrpc":"2.0","method":"eth_getWork"}
+        if (typeof body === 'undefined') {
+            return;
+        }
+
         var obj = JSON.parse(body);
 
         switch (obj.method) {
