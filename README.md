@@ -1,10 +1,10 @@
 ![](https://flowchain.co/static/logo-text@128.png)
 
-[WIP] This document is under development.
+The fast and light-weight Flowchain client in 100% JavaScript.
 
-# hybrid-node
+# flowchain-node
 
-The `hybrid-node` is the *hybrid consensus node* that connected the public mining pool to broadcast the `λ` value described in the academic paper. This PoC supports ETH as the public blockchain.
+The `flowchain-node` is a fast and light-weight Flowchain client that can mine FlowchainCoin. It is also the *hybrid consensus node* across the Flowchain network that connects to the public blockchain and provides the puzzle and `λ` values to the private blockchains.
 
 # Introduction
 
@@ -29,7 +29,7 @@ For Ubuntu users:
 
 ## How to Use
 
-Start the ```index.js``` hybrid node:
+Start the ```index.js``` Flowchain node:
 
 ```
 $ node index.js 
