@@ -343,22 +343,12 @@ client.start({
   servers: [
     {
 	    id: 0,
-	    host: "eth-eu.dwarfpool.com",
-   	  port: 8008
-    },
-    {
-	    id: 1,
-	    host: "eth-us.pool.flowchain.io",
-	    port: 8008
-    },
-    {
-	    id: 2,
-      host: "noobpool.com",
-   	  port: 8008
+	    host: "testnet.pool.flowchain.io",
+	    port: 3333
     }
   ],
   // the server id to use
-  serverId: 1,
+  serverId: 0,
   worker: "flowchain-dev",
   autoReconnectOnError: true,
   onConnect: onConnect,
