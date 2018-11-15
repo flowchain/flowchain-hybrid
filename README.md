@@ -10,9 +10,7 @@ The `flowchain-node` is a fast and light-weight Flowchain client that can mine F
 
 To bootstrap a new blockchain network, the mining pool uses to the Stratum protocol to join an existing blockchain network, such as Bitcoin and Ethereum, to generate the `λ` value.
 
-# Use ETH Pools
-
-## Prerequisite
+# Prerequisite
 
 For MacOS users:
 
@@ -27,24 +25,23 @@ For Ubuntu users:
 * Node 9.4.0
 * NPM 5.6.0
 
-## How to Use
+
+# How to Use
+
+## Use Flowchain testnet
 
 Start the ```index.js``` Flowchain node:
 
 ```
 $ node index.js 
-Connect to eth.pool.flowchain.io:8008 , id: 1
+Connect to testnet.pool.flowchain.io:3333 , id: 0
 HTTP server started on port 55752.
-Connected to server eth.pool.flowchain.io:8008
-Received shared work:  0xc19c9e40c8b2f15f0fca6319285c323c34de9412fbc80373ee0321783efdc2b6
-[flowchain-dev0] Received new job #0xc19c9e
- seed: #0x0ba3f65a466961c3edca9c346b0309
- target: #0x0112e0be826d694b2e62d0
-New block found: 0x0093dfb2d485366527b25b81f972774d6d35af3f32ceef67e5689e149234e2a0
-Received shared work:  0xc19c9e40c8b2f15f0fca6319285c323c34de9412fbc80373ee0321783efdc2b6
-[flowchain-dev0] Received new job #0xc19c9e
- seed: #0x0ba3f65a466961c3edca9c346b0309
- target: #0x0112e0be826d694b2e62d0
+Connected to server testnet.pool.flowchain.io:3333
+Received shared work:  0xcc834fd577df20a16a1faa791633a9a47e3058241f5d07891ef6126f89907c22
+[flowchain-dev0] Received new job #0xcc834f
+ seed: #0xfcf7d78601c4fd5d68fc7f00bc0641
+ target: #0x89705f4136b4a59731680a
+New block found: 0x0010eaea9cc48cf9ec2b35b2230498cae773d2c9d27101670377bb5b00f9c255
 ```
 
 Use the Stratum protocol ```eth_getWork``` to get the lambda value. The simplest way to do it is using ```curl```:
@@ -61,13 +58,13 @@ The response:
 
 The response message indicates that the lambda value is ```5af90b68f9051a6fe1b5a2006cc345dbeafbf9df5d4ae8cc6399f515b51bdb19```, meaning that the entities has to solve the puzzle by this value in a fixed time interval. In short, the entity will receive *Puzzle* from peers, and the Puzzle has 8 to 10 shared works from the Ethereum pool.
 
-## Bibliography
+# Bibliography
 
 This work is based on the research paper.
 
 [1] Chen, J. (2018). [Hybrid Blockchain and Pseudonymous Authentication for Secure and Trusted IoT Networks](https://flowchain.co/flowchain-AIoTAS18_ACCEPTED.pdf) In: The 2nd Workshop on Advances in IoT Architecture and Systems, Los Angeles, California, USA.
 
-### How to Cite
+# How to Cite
 
 ```
 @article{flowchain_2018,
@@ -78,6 +75,6 @@ year={2018}
 },
 ```
 
-## License
+# License
 
 Copyright (C) 2018 [Jollen Chen](https://github.com/jollen). The source code is licensed under the MIT license found in the [LICENSE](LICENSE) file.
