@@ -304,6 +304,15 @@ Client.prototype.submit = function(payload, socketId) {
     this.socket[socketId].write(stratumSerialize(data));
 }
 
+Client.prototype.submitBlocks = function(result) {
+    for (var key in this.ids) {
+      var id = this.ids[key];
+      result['miner'] = id;
+      
+      this.socket[key].write(stratumSerialize(result));
+    }
+}
+
 /*
  * Proxy
  */
@@ -349,7 +358,7 @@ var startSubmitInterval = function(socketId) {
         var body = {"id":1,"jsonrpc":"2.0","method":"eth_getWork"};
         client.submit(body, socketId);
     }.bind(this), 2000);
-}
+};
 
 /**
  * @param server the server object
@@ -481,6 +490,25 @@ Lambda.prototype._setWork = function(work)
 
 var sBlockHeight = 1;
 
+Lambda.prototype.submitBlocks = function(blocks)
+{
+    var result  = {
+      id: 1,
+      jsonrpc: '2.0',
+      method: 'eth_submitWork',
+      params: [
+        this.sHeaderHash,
+        this.sSeedHash,
+        // the shared difficulty from the mining pool
+        this.sShareTarget
+      ],
+      miner: '',
+      virtualBlocks: blocks
+    };
+
+    client.submitBlocks(result);
+};
+
 Lambda.prototype.setWorkForResult = function(work)
 {
     this._setWork(work);
@@ -498,8 +526,17 @@ Lambda.prototype.setWorkForResult = function(work)
       lambda: this.getLambdaString(),
       puzzle: JSON.parse(this.getPuzzle())
     };
+
+    this.submitBlocks([ {
+      height: sBlockHeight,
+      blockHash: hash.toString(16),
+      nonce: this.nonce,
+      lambda: this.getLambdaString(),
+      puzzle: JSON.parse(this.getPuzzle())
+    } ]);
+
     return stratumSerialize(result);
-}
+};
 
 var virtualMiner = function(nonce, previousHash, seedHash) {
     // The header of the new block.
