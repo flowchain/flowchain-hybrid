@@ -224,6 +224,31 @@ function Client()
 
 Client.prototype.start = function(options)
 {
+  this._start(appServer, {
+      // Stratum servers
+      servers: [
+        {
+          id: 0,
+          host: options.host,
+          port: options.port
+        }
+      ],
+      // the server id to use
+      serverId: 0,
+      worker: options.worker,
+      autoReconnectOnError: true,
+      onConnect: onConnect,
+      onClose: onClose,
+      onError:  onError,
+      onAuthorize: onAuthorize,
+      onNewDifficulty: onNewDifficulty,
+      onSubscribe: onSubscribe,
+      onNewMiningWork: onNewMiningWork
+    });
+}
+
+Client.prototype._start = function(appServer, options)
+{
     var updatedOptions = extend({}, this.options, options);
     validateConfig(updatedOptions);
 
@@ -257,6 +282,14 @@ Client.prototype.start = function(options)
 
     	connect.call(this, id, server, updatedOptions.onConnect);
     }
+
+    // start the API server
+    appServer.listen({
+      port: 55752,
+      host: '0.0.0.0'
+    }, function() {
+      console.log('Hybrid node API server started on port 55752.');
+    });    
 }
 
 Client.prototype.shutdown = function() 
@@ -356,27 +389,6 @@ var onNewMiningWork = function(newWork) {
   console.log('[New Work]', newWork);
 };
 
-client.start({
-  // Stratum servers
-  servers: [
-    {
-	    id: 0,
-	    host: "testnet.pool.flowchain.io",
-	    port: 3333
-    }
-  ],
-  // the server id to use
-  serverId: 0,
-  worker: "flowchain-dev",
-  autoReconnectOnError: true,
-  onConnect: onConnect,
-  onClose: onClose,
-  onError:  onError,
-  onAuthorize: onAuthorize,
-  onNewDifficulty: onNewDifficulty,
-  onSubscribe: onSubscribe,
-  onNewMiningWork: onNewMiningWork
-});
 
 /*
  * Stratum Server
@@ -561,7 +573,7 @@ Lambda.prototype.getPuzzle = function()
 // FIXME: The lambda object must be singleton
 var gLambda = new Lambda();
 var tasks = {};
-var server = http.createServer(function(req, res) {
+var appServer = http.createServer(function(req, res) {
     var pathname = url.parse(req.url).pathname;
 
     var handlers = {
@@ -631,9 +643,34 @@ var server = http.createServer(function(req, res) {
     }
 });
 
-server.listen({
-  port: 55752,
-  host: '0.0.0.0'
-}, function() {
-  console.log('HTTP server started on port 55752.');
-});
+
+if (typeof(module) != "undefined" && typeof(exports) != "undefined") {
+    module.exports = {
+      Miner: client
+    };
+}
+
+if (!module.parent) {
+  client._start(appServer, {
+    // Stratum servers
+    servers: [
+      {
+        id: 0,
+        host: "testnet.pool.flowchain.io",
+        port: 3333
+      }
+    ],
+    // the server id to use    
+    serverId: 0,
+    worker: "flowchain-dev",
+    autoReconnectOnError: true,
+    onConnect: onConnect,
+    onClose: onClose,
+    onError:  onError,
+    onAuthorize: onAuthorize,
+    onNewDifficulty: onNewDifficulty,
+    onSubscribe: onSubscribe,
+    onNewMiningWork: onNewMiningWork
+  });
+
+}
