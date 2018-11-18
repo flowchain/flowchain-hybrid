@@ -9,8 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "big-integer": "^1.6.36",
     "chalk": "^2.3.0",
     "lodash": "^4.17.4",
+    "moment": "^2.22.2",
     "seqlist": "^1.1.0"
   }
 }

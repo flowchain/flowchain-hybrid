@@ -26,8 +26,28 @@ var crypto = require('crypto');
 var extend = require('lodash/extend');
 var trim = require('lodash/trim');
 var chalk = require('chalk');
+var moment = require('moment');
 var validateConfig = require('./validateConfig');
 var WorkObject = require('./workObject/StratumEthproxy');
+var utils = require('./utils');
+
+/**
+ * Log utils
+ */
+var TAG = 'flowchain'
+var getTimeStamp = function() {
+    var ts = moment().toISOString();
+    var _ts = ts.split(/[T:\.Z]/); // [ '2018-06-24', '03', '55', '14', '303', '' ]    
+
+    return ('[' + chalk.green(TAG + '') + ' ' +
+            _ts[1] + ':' +
+            _ts[2] + ':' +
+             chalk.red(_ts[3]) +
+             ']');
+}; 
+var LOGI = function(msg) {
+  console.log(getTimeStamp(), msg);
+};
 
 /**
  * Utils - pad a hex string
@@ -127,6 +147,9 @@ var gCurrentWork = {};
 var getCurrentWorkId = function() {
     return stratumDeserialize(getCurrentWork()).id;
 };
+var getCurrentDifficulty = function() {
+    return stratumDeserialize(getCurrentWork()).result[2];
+};
 var getCurrentWorkSocketId = function() {
     return gCurrentWork.socketId;
 };
@@ -168,7 +191,6 @@ var _onDataSetWork = function(payload) {
 
     // eth_getWork
     if (data.result && typeof data.result === 'object') {
-      console.log('Received shared work: ', data.result[0]);
       return setCurrentWork(data);
     }
 }
@@ -185,10 +207,6 @@ var onData = function(payload) {
         var sHeaderHash = result[0];
         var sSeedHash = result[1];
         var sShareTarget = result[2];
-
-        console.log("[flowchain-dev0] Received new job #" + sHeaderHash.substr(0, 8));
-        console.log(" seed: #" + sSeedHash.substr(0, 32));
-        console.log(" target: #" + sShareTarget.substr(0, 24));
 
         gLambda.setWorkForResult(payload);
     }
@@ -449,13 +467,22 @@ Lambda.prototype._setWork = function(work)
     this.sShareTarget = workObject.result[2];	
 }
 
+var sBlockHeight = 1;
+
 Lambda.prototype.setWorkForResult = function(work)
 {
     this._setWork(work);
     // The miner is synchronous
-    this._miner();
+    var hash = this._miner();
+
+    //LOGI("Received new job #" + sHeaderHash.substr(0, 8));
+
+    LOGI(chalk.red('Block ' + sBlockHeight + ' found') + ' 0x' + hash.toString(16));
+    sBlockHeight++;
 
     var result = {
+      height: sBlockHeight,
+      nonce: this.nonce,
       lambda: this.getLambdaString(),
       puzzle: JSON.parse(this.getPuzzle())
     };
@@ -490,22 +517,18 @@ Lambda.prototype._miner = function()
 {
     var MAX_LOOPS = 1000000;	// 1M
 
-    // FIXME: the difficulty has to be a small number of a shared difficulty from the public mining pool
-    var difficulties = [
-      '00F8888888888888888888888888888888888888888888888888888888888888',
-      '0F88888888888888888888888888888888888888888888888888888888888888'
-    ];
-
+    var difficulties = [];
     var nonce = this.nonce;
+
+    // The shared difficulty
+    difficulties.push(this.sShareTarget);
 
     while (MAX_LOOPS-- > 0) {
       var hash = virtualMiner(nonce, this.sHeaderHash, this.sSeedHash);
 
-      if (hash <= difficulties[0]) {
-        console.log(chalk.green('New block found: 0x' + hash.toString(16)));
-
+      if ( utils.hexToBigInt(hash) <= utils.hexToBigInt(difficulties[0]) ) {
         this.nonce = nonce;
-        return nonce;
+        return hash;
       }
 
       nonce++;
@@ -594,7 +617,7 @@ var server = http.createServer(function(req, res) {
 
           var response = gLambda.setWorkForResult(work);
 
-          console.log(chalk.red('Broadcasting lambda: 0x' + gLambda.getLambdaString()));
+          LOGI(chalk.red('Broadcasting lambda: 0x' + gLambda.getLambdaString()));
 
           res.writeHead(200, {'Content-Type': 'text/json'});
           res.end(response);
