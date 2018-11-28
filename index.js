@@ -198,6 +198,14 @@ var _onDataSetWork = function(payload) {
 var onData = function(payload) {
     var obj = stratumDeserialize(payload);
 
+    if (!obj) {
+      return;
+    }
+
+    if (typeof obj.id === 'undefined') {
+      return;
+    }
+
     var id = obj.id || 0;
     var result = obj.result;
 
@@ -223,6 +231,36 @@ function Client()
 }
 
 Client.prototype.start = function(options)
+{
+  this._start(appServer, {
+      // Stratum servers
+      servers: [
+        {
+          id: 0,
+          host: options.host,
+          port: options.port
+        }
+      ],
+      // API server
+      apiServer: {
+        host: process.env.API_HOST || '127.0.0.1',
+        port: process.env.API_PORT || '55752'
+      },
+      // the server id to use
+      serverId: 0,
+      worker: options.worker,
+      autoReconnectOnError: true,
+      onConnect: onConnect,
+      onClose: onClose,
+      onError:  onError,
+      onAuthorize: onAuthorize,
+      onNewDifficulty: onNewDifficulty,
+      onSubscribe: onSubscribe,
+      onNewMiningWork: onNewMiningWork
+    });
+}
+
+Client.prototype._start = function(appServer, options)
 {
     var updatedOptions = extend({}, this.options, options);
     validateConfig(updatedOptions);
@@ -257,6 +295,15 @@ Client.prototype.start = function(options)
 
     	connect.call(this, id, server, updatedOptions.onConnect);
     }
+
+console.log(updatedOptions);
+    // start the API server
+    appServer.listen({
+      port: updatedOptions.apiServer.port,
+      host: updatedOptions.apiServer.host
+    }, function() {
+      console.log('Hybrid node API server started on',  options.apiServer.host, 'at port', options.apiServer.port);
+    });    
 }
 
 Client.prototype.shutdown = function() 
@@ -269,6 +316,35 @@ Client.prototype.submit = function(payload, socketId) {
     var data = stratumDeserialize(payload);
 
     this.socket[socketId].write(stratumSerialize(data));
+}
+
+/*
+ * TODO: Use memory cache to cache pending virtual blocks
+ */
+var gPendingVirtualBlocks = [];
+Client.prototype.submitVirtualBlocks = function(vBlocks)
+{
+    gPendingVirtualBlocks.push(vBlocks);
+}
+
+/*
+ * Verify Virtual Blocks in the private blockchain and
+ * send the crossponding transactions to the public blockchains.
+ */
+Client.prototype.submitBlocks = function(result) {
+    for (var key in this.ids) {
+      var id = this.ids[key];
+      result['miner'] = id;
+
+      for (var i = 0; i < gPendingVirtualBlocks.length; i++) {
+        result['txs'][i] = gPendingVirtualBlocks[i];
+      }
+      
+      this.socket[key].write(stratumSerialize(result));
+    }
+
+    // Clear cache
+    gPendingVirtualBlocks = [];
 }
 
 /*
@@ -316,7 +392,7 @@ var startSubmitInterval = function(socketId) {
         var body = {"id":1,"jsonrpc":"2.0","method":"eth_getWork"};
         client.submit(body, socketId);
     }.bind(this), 2000);
-}
+};
 
 /**
  * @param server the server object
@@ -356,27 +432,6 @@ var onNewMiningWork = function(newWork) {
   console.log('[New Work]', newWork);
 };
 
-client.start({
-  // Stratum servers
-  servers: [
-    {
-	    id: 0,
-	    host: "testnet.pool.flowchain.io",
-	    port: 3333
-    }
-  ],
-  // the server id to use
-  serverId: 0,
-  worker: "flowchain-dev",
-  autoReconnectOnError: true,
-  onConnect: onConnect,
-  onClose: onClose,
-  onError:  onError,
-  onAuthorize: onAuthorize,
-  onNewDifficulty: onNewDifficulty,
-  onSubscribe: onSubscribe,
-  onNewMiningWork: onNewMiningWork
-});
 
 /*
  * Stratum Server
@@ -469,6 +524,26 @@ Lambda.prototype._setWork = function(work)
 
 var sBlockHeight = 1;
 
+Lambda.prototype.submitBlocks = function(blocks)
+{
+    var result  = {
+      id: 1,
+      jsonrpc: '2.0',
+      method: 'eth_submitWork',
+      params: [
+        this.sHeaderHash,
+        this.sSeedHash,
+        // the shared difficulty from the mining pool
+        this.sShareTarget
+      ],
+      miner: '',
+      virtualBlocks: blocks,
+      txs: []
+    };
+
+    client.submitBlocks(result);
+};
+
 Lambda.prototype.setWorkForResult = function(work)
 {
     this._setWork(work);
@@ -486,8 +561,17 @@ Lambda.prototype.setWorkForResult = function(work)
       lambda: this.getLambdaString(),
       puzzle: JSON.parse(this.getPuzzle())
     };
+
+    this.submitBlocks([ {
+      height: sBlockHeight,
+      blockHash: hash.toString(16),
+      nonce: this.nonce,
+      lambda: this.getLambdaString(),
+      puzzle: JSON.parse(this.getPuzzle())
+    } ]);
+
     return stratumSerialize(result);
-}
+};
 
 var virtualMiner = function(nonce, previousHash, seedHash) {
     // The header of the new block.
@@ -561,7 +645,7 @@ Lambda.prototype.getPuzzle = function()
 // FIXME: The lambda object must be singleton
 var gLambda = new Lambda();
 var tasks = {};
-var server = http.createServer(function(req, res) {
+var appServer = http.createServer(function(req, res) {
     var pathname = url.parse(req.url).pathname;
 
     var handlers = {
@@ -631,9 +715,38 @@ var server = http.createServer(function(req, res) {
     }
 });
 
-server.listen({
-  port: 55752,
-  host: '0.0.0.0'
-}, function() {
-  console.log('HTTP server started on port 55752.');
-});
+
+if (typeof(module) != "undefined" && typeof(exports) != "undefined") {
+    module.exports = {
+      Miner: client
+    };
+}
+
+if (!module.parent) {
+  client._start(appServer, {
+    // Stratum servers
+    servers: [
+      {
+        id: 0,
+        host: "testnet.pool.flowchain.io",
+        port: 3333
+      }
+    ],
+    apiServer: {
+      host: process.env.API_HOST || '127.0.0.1',
+      port: process.env.API_PORT || '55752'
+    },
+    // the server id to use    
+    serverId: 0,
+    worker: "flowchain-dev",
+    autoReconnectOnError: true,
+    onConnect: onConnect,
+    onClose: onClose,
+    onError:  onError,
+    onAuthorize: onAuthorize,
+    onNewDifficulty: onNewDifficulty,
+    onSubscribe: onSubscribe,
+    onNewMiningWork: onNewMiningWork
+  });
+
+}

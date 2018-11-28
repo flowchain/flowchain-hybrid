@@ -1,10 +1,10 @@
 ![](https://flowchain.co/static/logo-text@128.png)
 
-The fast and light-weight Flowchain client in 100% JavaScript.
+The fast and light-weight Flowchain hybrid node library.
 
 # flowchain-node
 
-The `flowchain-node` is a fast and light-weight Flowchain client that can mine FlowchainCoin. It is also the *hybrid consensus node* across the Flowchain network that connects to the public blockchain and provides the puzzle and `λ` values to the private blockchains.
+The `flowchain-hybrid` is a fast and light-weight Flowchain hybrid node that can mine FlowchainCoin. It is the *hybrid consensus node* across the Flowchain hybrid blockchain network that connects to the public blockchain and provides the puzzle and `λ` values to the private blockchains.
 
 # Introduction
 
