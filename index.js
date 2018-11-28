@@ -198,6 +198,14 @@ var _onDataSetWork = function(payload) {
 var onData = function(payload) {
     var obj = stratumDeserialize(payload);
 
+    if (!obj) {
+      return;
+    }
+
+    if (typeof obj.id === 'undefined') {
+      return;
+    }
+
     var id = obj.id || 0;
     var result = obj.result;
 
@@ -233,6 +241,11 @@ Client.prototype.start = function(options)
           port: options.port
         }
       ],
+      // API server
+      apiServer: {
+        host: process.env.API_HOST || '127.0.0.1',
+        port: process.env.API_PORT || '55752'
+      },
       // the server id to use
       serverId: 0,
       worker: options.worker,
@@ -283,12 +296,13 @@ Client.prototype._start = function(appServer, options)
     	connect.call(this, id, server, updatedOptions.onConnect);
     }
 
+console.log(updatedOptions);
     // start the API server
     appServer.listen({
-      port: 55752,
-      host: '0.0.0.0'
+      port: updatedOptions.apiServer.port,
+      host: updatedOptions.apiServer.host
     }, function() {
-      console.log('Hybrid node API server started on port 55752.');
+      console.log('Hybrid node API server started on',  options.apiServer.host, 'at port', options.apiServer.port);
     });    
 }
 
@@ -304,13 +318,33 @@ Client.prototype.submit = function(payload, socketId) {
     this.socket[socketId].write(stratumSerialize(data));
 }
 
+/*
+ * TODO: Use memory cache to cache pending virtual blocks
+ */
+var gPendingVirtualBlocks = [];
+Client.prototype.submitVirtualBlocks = function(vBlocks)
+{
+    gPendingVirtualBlocks.push(vBlocks);
+}
+
+/*
+ * Verify Virtual Blocks in the private blockchain and
+ * send the crossponding transactions to the public blockchains.
+ */
 Client.prototype.submitBlocks = function(result) {
     for (var key in this.ids) {
       var id = this.ids[key];
       result['miner'] = id;
+
+      for (var i = 0; i < gPendingVirtualBlocks.length; i++) {
+        result['txs'][i] = gPendingVirtualBlocks[i];
+      }
       
       this.socket[key].write(stratumSerialize(result));
     }
+
+    // Clear cache
+    gPendingVirtualBlocks = [];
 }
 
 /*
@@ -503,7 +537,8 @@ Lambda.prototype.submitBlocks = function(blocks)
         this.sShareTarget
       ],
       miner: '',
-      virtualBlocks: blocks
+      virtualBlocks: blocks,
+      txs: []
     };
 
     client.submitBlocks(result);
@@ -697,6 +732,10 @@ if (!module.parent) {
         port: 3333
       }
     ],
+    apiServer: {
+      host: process.env.API_HOST || '127.0.0.1',
+      port: process.env.API_PORT || '55752'
+    },
     // the server id to use    
     serverId: 0,
     worker: "flowchain-dev",
