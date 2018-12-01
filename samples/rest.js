@@ -27,9 +27,9 @@ var extend = require('lodash/extend');
 var trim = require('lodash/trim');
 var chalk = require('chalk');
 var moment = require('moment');
-var validateConfig = require('./validateConfig');
-var WorkObject = require('./workObject/StratumEthproxy');
-var utils = require('./utils');
+var validateConfig = require('../validateConfig');
+var WorkObject = require('../workObject/StratumEthproxy');
+var utils = require('../utils');
 
 
 /*
