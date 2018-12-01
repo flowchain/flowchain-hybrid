@@ -729,7 +729,7 @@ if (!module.parent) {
       {
         id: 0,
         host: "testnet.pool.flowchain.io",
-        port: 3333
+        port: process.env.PORT || 3333
       }
     ],
     apiServer: {
