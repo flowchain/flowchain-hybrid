@@ -1,3 +1,27 @@
+/**
+ * MIT License
+ * 
+ * Copyright (c) 2017 Jollen Chen
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 var crypto = require('crypto');
 var net = require('net');
 var extend = require('lodash/extend');
@@ -6,10 +30,17 @@ var WorkObject = require('../workObject/StratumEthproxy');
 const { 
   LOGI
 } = require('../utils');
+const {
+  stratumSerialize,
+  stratumDeserialize,
+  StratumSubscribe  
+} = require('../libs/stratum');
 
 /**
  * Util APIs
  */
+var lambda = require('./lambda');
+
 var connect = function(socketId, server, onConnect) {
     LOGI('Connect to ' + server.host + ':' + server.port, ', id:', server.id);
 
@@ -18,6 +49,13 @@ var connect = function(socketId, server, onConnect) {
             onConnect.call(this, socketId, server);
         }
     }.bind(this));
+};
+
+var startSubmitInterval = function(socketId, client) {
+    setInterval(function() {
+        var body = {"id":1,"jsonrpc":"2.0","method":"eth_getWork"};
+        client.submit(body, socketId);
+    }.bind(this), 2000);
 };
 
 /**
@@ -31,10 +69,10 @@ var onConnect = function(socketId, server) {
 
   var data = StratumSubscribe['STRATUM_PROTOCOL_ETHPROXY'];
 
-  this.submit(data, socketId);
+  this.submit.call(this, data, socketId);
 
   // call global actions
-  startSubmitInterval(socketId);
+  startSubmitInterval.call(this, socketId, this);
 };
 
 var onClose = function() {
@@ -126,6 +164,7 @@ var onDataSetWork = function(payload) {
 
 var onData = function(payload) {
     var obj = stratumDeserialize(payload);
+    var client = this.client;
 
     if (!obj) {
       return;
@@ -145,7 +184,9 @@ var onData = function(payload) {
         var sSeedHash = result[1];
         var sShareTarget = result[2];
 
-        gLambda.setWorkForResult(payload);
+        var blocks = lambda.prepreVirtualBlocks(payload);
+
+        client.submitVirtualBlocks(blocks, result);        
     }
 }
 
@@ -197,7 +238,8 @@ Client.prototype.startClientWithAppServer = function(appServer, updatedOptions)
       this.socket[id] = new net.Socket();
       this.socket[id].updatedOptions = updatedOptions;
     	this.socket[id].setEncoding('utf8');
-      this.socket[id].server = server;
+      this.socket[id].client = this;
+      this.socket[id].server = server;      
     	this.socket[id].on('data', function(data) {
         	onData.call(this, data);
     	});
@@ -238,16 +280,47 @@ Client.prototype.submit = function(payload, socketId) {
  * TODO: Use memory cache to cache pending virtual blocks
  */
 var gPendingVirtualBlocks = [];
-Client.prototype.submitVirtualBlocks = function(vBlocks)
+
+Client.prototype.submitVirtualBlocks = function(vBlocks, result)
 {
+  if (typeof vBlocks === 'undefined') {
+    return;
+  }
+
+  if (typeof vBlocks === 'object' && vBlocks.length > 0) {
     gPendingVirtualBlocks.push(vBlocks);
+    return this.prepareToSendBlocks(vBlocks, result);
+  }
 }
+
+Client.prototype.prepareToSendBlocks = function(blocks, result)
+{
+    var sHeaderHash = result[0];
+    var sSeedHash = result[1];
+    var sShareTarget = result[2];  
+    var result  = {
+      id: 1,
+      jsonrpc: '2.0',
+      method: 'eth_submitWork',
+      params: [
+        sHeaderHash,
+        sSeedHash,
+        // the shared difficulty from the mining pool
+        sShareTarget
+      ],
+      miner: '',
+      virtualBlocks: blocks,
+      txs: []
+    };
+
+    this.sendVirtualBlocks(result);
+};
 
 /*
  * Verify Virtual Blocks in the private blockchain and
  * send the crossponding transactions to the public blockchains.
  */
-Client.prototype.submitBlocks = function(result) {
+Client.prototype.sendVirtualBlocks = function(result) {
     for (var key in this.ids) {
       var id = this.ids[key];
       result['miner'] = id;

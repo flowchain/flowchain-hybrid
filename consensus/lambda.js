@@ -1,17 +1,58 @@
+/**
+ * MIT License
+ * 
+ * Copyright (c) 2017 Jollen Chen
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+var SeqList = require('seqlist');
+var crypto = require('crypto');
+var chalk = require('chalk');
+const {
+  stratumSerialize,
+  stratumDeserialize,
+  StratumSubscribe  
+} = require('../libs/stratum');
+const { 
+  utils,
+  LOGI
+} = require('../utils');
+
 function Lambda()
 {
-    this.sHeaderHash = '';
-    this.sSeedHash = '';
-    this.sShareTarget = '';
-    this.nonce = 1;
+  this.sHeaderHash = '';
+  this.sSeedHash = '';
+  this.sShareTarget = '';
+  this.nonce = 1;  
+}
 
-    return this;
+var sLambda = null;
+
+function getInstance() {
+  if (!sLambda) {
+    sLambda = new Lambda();
+  }
+  return sLambda;
 }
 
 Lambda.prototype.generateLambdaPuzzle = function(nonce, header) {
-    var SeqList = require('seqlist');
-    var crypto = require('crypto');
-
     // FILL YOUR TOKEN ADDRESS
     var hash = crypto.createHmac('sha256', '0xA3b2692eD05309a33F589cdb197767bc257D7C2B')
         .update( JSON.stringify(header) )
@@ -71,7 +112,7 @@ Lambda.prototype.submitBlocks = function(blocks)
     client.submitBlocks(result);
 };
 
-Lambda.prototype.setWorkForResult = function(work)
+Lambda.prototype.prepreVirtualBlocks = function(work)
 {
     this._setWork(work);
     // The miner is synchronous
@@ -82,22 +123,15 @@ Lambda.prototype.setWorkForResult = function(work)
     LOGI(chalk.red('Block ' + sBlockHeight + ' found') + ' 0x' + hash.toString(16));
     sBlockHeight++;
 
-    var result = {
-      height: sBlockHeight,
-      nonce: this.nonce,
-      lambda: this.getLambdaString(),
-      puzzle: JSON.parse(this.getPuzzle())
-    };
-
-    this.submitBlocks([ {
+    var virtualBlocks = [{
       height: sBlockHeight,
       blockHash: hash.toString(16),
       nonce: this.nonce,
       lambda: this.getLambdaString(),
       puzzle: JSON.parse(this.getPuzzle())
-    } ]);
+    }];
 
-    return stratumSerialize(result);
+    return virtualBlocks;
 };
 
 var virtualMiner = function(nonce, previousHash, seedHash) {
@@ -114,7 +148,7 @@ var virtualMiner = function(nonce, previousHash, seedHash) {
                         .digest('hex');
 
     // Generate the lambda value and its corresponding puzzle.
-    gLambda.generateLambdaPuzzle(nonce, header);
+    sLambda.generateLambdaPuzzle(nonce, header);
 
     return blockHash;
 }; 
@@ -169,4 +203,4 @@ Lambda.prototype.getPuzzle = function()
     return this.puzzle;
 }
 
-module.exports = Lambda;
+module.exports = getInstance();
