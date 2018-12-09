@@ -1,30 +1,23 @@
 ![](https://flowchain.co/static/logo-text@128.png)
 
-The fast and light-weight Flowchain hybrid node library.
-
-# flowchain-node
-
-The `flowchain-hybrid` is a fast and light-weight Flowchain hybrid node that can mine FlowchainCoin. It is the *hybrid consensus node* across the Flowchain hybrid blockchain network that connects to the public blockchain and provides the puzzle and `λ` values to the private blockchains.
+The fast and light-weight Flowchain hybrid consensus miner.
 
 # Introduction
 
-To bootstrap a new blockchain network, the mining pool uses to the Stratum protocol to join an existing blockchain network, such as Bitcoin and Ethereum, to generate the `λ` value.
+The `flowchain-hybrid` is a fast and light-weight Flowchain hybrid node that can mine FlowchainCoin. It is the *hybrid consensus node* across the Flowchain hybrid blockchain network that connects to the public blockchain and provides the puzzle and `λ` values to the private blockchains.
 
 # Prerequisite
 
 For MacOS users:
 
 * Command Line Tools for Xcode - Run ```xcode-select --install``` for installation
-* Node 9.4.0
-* NPM 5.6.0
+* Node.js 8+
 
 For Ubuntu users:
 
 * Ubuntu 16.04 or above
 * Build-essential package - Run ```sudo apt-get install build-essential``` for installation
-* Node 9.4.0
-* NPM 5.6.0
-
+* Node 8+
 
 # How to Use
 
@@ -33,15 +26,23 @@ For Ubuntu users:
 Start the ```index.js``` Flowchain node:
 
 ```
-$ node index.js 
-Connect to testnet.pool.flowchain.io:3333 , id: 0
-HTTP server started on port 55752.
-Connected to server testnet.pool.flowchain.io:3333
-Received shared work:  0xcc834fd577df20a16a1faa791633a9a47e3058241f5d07891ef6126f89907c22
-[flowchain-dev0] Received new job #0xcc834f
- seed: #0xfcf7d78601c4fd5d68fc7f00bc0641
- target: #0x89705f4136b4a59731680a
-New block found: 0x0010eaea9cc48cf9ec2b35b2230498cae773d2c9d27101670377bb5b00f9c255
+$ node index.js
+[Verbose 15:02:10] P2P/Chord/node id = 69a3e9ec2138e70f78abeeb964d50b9512b7e959
+[Verbose 15:02:10] P2P/Chord/successor = {"address":"localhost","port":8000,"id":"69a3e9ec2138e70f78abeeb964d50b9512b7e959"}
+[Flowchain/IPFS 15:02:11] Hybrid
+[Flowchain/IPFS 15:02:11] Flowchain-ledger
+[Verbose 15:02:11] flowchain-hybrid 0.2.0/----- Genesis Block -----
+[Verbose 15:02:11] flowchain-hybrid 0.2.0/{"hash":"dd0e2b79d79be0dfca96b4ad9ac85600097506f06f52bb74f769e02fcc66dec6","previousHash":"0000000000000000000000000000000000000000000000000000000000000000","timestamp":"2018-12-09T15:02:10.047Z","merkleRoot":{},"difficulty":"0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","nonce":0,"no":0}
+[Verbose 15:02:11] flowchain-hybrid 0.2.0/----- Start mining -----
+[flowchain 15:02:11] Connect to testnet.pool.flowchain.io:3333
+[Flowchain/IPFS 15:02:11] Hybrid
+[flowchain 15:02:11] Hybrid node API server started on
+[flowchain-hybrid 0.2.0 15:02:11] node is running at ws://localhost:8000
+[flowchain 15:02:11] Connected to server
+[Verbose 15:02:13] P2P/Debug/onNewThing: [object Object]
+[flowchain 15:02:13] Block 1 found 0x0121ee9185bcb61cd92efa058e884687d0f355463f775139fe746fc5ecace07b
+[P2P/Chord 15:02:13] successor_ttl = 6
+[P2P/Chord 15:02:15] predecessor_ttl = 6
 ```
 
 Use the Stratum protocol ```eth_getWork``` to get the lambda value. The simplest way to do it is using ```curl```:
@@ -72,17 +73,52 @@ node.submit(data);
 
 This work is based on the research paper.
 
-[1] Chen, J. (2018). [Hybrid Blockchain and Pseudonymous Authentication for Secure and Trusted IoT Networks](https://flowchain.co/flowchain-AIoTAS18_ACCEPTED.pdf) In: The 2nd Workshop on Advances in IoT Architecture and Systems, Los Angeles, California, USA.
+[1] Jollen Chen. 2018. Devify: decentralized internet of things software framework for a peer-to-peer and interoperable IoT device. SIGBED Rev. 15, 2 (June 2018), 31-36. DOI: [https://doi.org/10.1145/3231535.3231539](https://doi.org/10.1145/3231535.3231539)
 
-# How to Cite
+[2] Jollen Chen. 2018. Hybrid blockchain and pseudonymous authentication for secure and trusted IoT networks. SIGBED Rev. 15, 5 (November 2018), 22-28. DOI: [https://doi.org/10.1145/3292384.3292388](https://doi.org/10.1145/3292384.3292388)
+
+## How to Cite
 
 ```
-@article{flowchain_2018,
-title={Hybrid Blockchain and Pseudonymous Authentication for Secure and Trusted IoT Networks},
-journal={Proceedings of the 2nd Workshop on Workshop on Advances in IoT Architecture and Systems (AIoTAS2018)},
-author={Chen, Jollen},
-year={2018}
-},
+@article{Chen:2018:DDI:3231535.3231539,
+ author = {Chen, Jollen},
+ title = {Devify: Decentralized Internet of Things Software Framework for a Peer-to-peer and Interoperable IoT Device},
+ journal = {SIGBED Rev.},
+ issue_date = {March 2018},
+ volume = {15},
+ number = {2},
+ month = jun,
+ year = {2018},
+ issn = {1551-3688},
+ pages = {31--36},
+ numpages = {6},
+ url = {http://doi.acm.org/10.1145/3231535.3231539},
+ doi = {10.1145/3231535.3231539},
+ acmid = {3231539},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {decentralized, flow-based programming, internet of things, interoperability, peer-to-peer, web of things},
+}
+
+@article{Chen:2018:HBP:3292384.3292388,
+ author = {Chen, Jollen},
+ title = {Hybrid Blockchain and Pseudonymous Authentication for Secure and Trusted IoT Networks},
+ journal = {SIGBED Rev.},
+ issue_date = {October 2018},
+ volume = {15},
+ number = {5},
+ month = nov,
+ year = {2018},
+ issn = {1551-3688},
+ pages = {22--28},
+ numpages = {7},
+ url = {http://doi.acm.org/10.1145/3292384.3292388},
+ doi = {10.1145/3292384.3292388},
+ acmid = {3292388},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {blockchain, decentralized, hybrid consensus, internet of things, peer-to-peer, trustless computing},
+} 
 ```
 
 # License
