@@ -21,51 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+ 
+"use strict";
 
-var bigInt = require("big-integer");
-var moment = require('moment');
-var chalk = require('chalk');
+var Handlers = {
+  send: function(pathname, connection, clients) {
+    console.log("Routed: " + pathname);
 
-var hexToBigInt = function(hex) {
-    var v = bigInt(hex.replace('0x', ''), 16);
-    return v;
+    // Store the API pathname
+    connection.pathname = pathname;
+  },
 };
 
-/**
- * Left-pad a hex string
- */
-String.prototype.pad = function(string, length) {
-    var str = this;
-    while (str.length < length)
-        str = string + str;
-    return str;
-}
-
-
-/**
- * Log utils
- */
-var TAG = 'flowchain';
-
-var getTimeStampForLog = function() {
-    var ts = moment().toISOString();
-    var _ts = ts.split(/[T:\.Z]/); // [ '2018-06-24', '03', '55', '14', '303', '' ]    
-
-    return ('[' + chalk.green(TAG + '') + ' ' +
-            _ts[1] + ':' +
-            _ts[2] + ':' +
-             chalk.red(_ts[3]) +
-             ']');
-}; 
-var LOGI = function(msg) {
-  console.log(getTimeStampForLog(), msg);
-};
-
-var utils = {
-    hexToBigInt: hexToBigInt
-};
-
-module.exports = {
-    utils: utils,
-    LOGI: LOGI
-};
+if (typeof(module) != "undefined" && typeof(exports) != "undefined")
+  module.exports = Handlers;
