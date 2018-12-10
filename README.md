@@ -8,6 +8,8 @@ The `flowchain-hybrid` is a fast and light-weight Flowchain hybrid node that can
 
 ![flowchain-network](https://user-images.githubusercontent.com/1126021/49709543-d599dc80-fc6f-11e8-9015-b08731351864.png)
 
+Flowchain aims to implement a blockchain that can provide a distributed ledger technology for the IoT and AI. Flowchain already proposed the virtual blocks technology that can ensure chunked data (data streams) transactions in a near-instant manner. Furthermore, the virtual block technology can integrate with IPFS, an emerging distributed storage blockchain and can work as an off-chain mechanism to transfer your digital assets from one trusted party to another. In this presentation, Jollen will show the implementation of a distributed storage using Flowchain and IPFS open source technologies.
+
 In the Flowchain network, hybrid node (aka. edge node) miners can join the Flowchain mining pool to broadcast puzzles to IoT devices. Please read [Flowchain](https://flowchain.co) for more information.
 
 # Prerequisite
@@ -65,7 +67,7 @@ The response message indicates that the lambda value is ```5af90b68f9051a6fe1b5a
 
 # Bibliography
 
-This work is based on the research paper.
+This work is based on the research papers.
 
 [1] Jollen Chen. 2018. Devify: decentralized internet of things software framework for a peer-to-peer and interoperable IoT device. SIGBED Rev. 15, 2 (June 2018), 31-36. DOI: [https://doi.org/10.1145/3231535.3231539](https://doi.org/10.1145/3231535.3231539)
 
