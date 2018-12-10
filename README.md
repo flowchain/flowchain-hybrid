@@ -6,9 +6,9 @@ The fast and light-weight Flowchain hybrid consensus miner.
 
 The `flowchain-hybrid` is a fast and light-weight Flowchain hybrid node that can mine FlowchainCoin. It is the *hybrid consensus node* across the Flowchain hybrid blockchain network that connects to the public blockchain and provides the puzzle and `λ` values to the private blockchains.
 
-<img src="https://flowchain.co/static/whitepaper/flowchain-network.png" />
+![flowchain-network](https://user-images.githubusercontent.com/1126021/49709543-d599dc80-fc6f-11e8-9015-b08731351864.png)
 
-In the Flowchain network, hybrid node (aka. edge node) miners can join the Flowchain mining pool to broadcast puzzles to IoT devices.
+In the Flowchain network, hybrid node (aka. edge node) miners can join the Flowchain mining pool to broadcast puzzles to IoT devices. Please read [Flowchain](https://flowchain.co) for more information.
 
 # Prerequisite
 
