@@ -10,7 +10,7 @@ The `flowchain-hybrid` is a fast and light-weight Flowchain hybrid node that can
 
 Flowchain aims to implement a blockchain that can provide a distributed ledger technology for the IoT and AI. Flowchain already proposed the virtual blocks technology that can ensure chunked data (data streams) transactions in a near-instant manner. Furthermore, the virtual block technology can integrate with IPFS, an emerging distributed storage blockchain and can work as an off-chain mechanism to transfer your digital assets from one trusted party to another. Flowchain shows the implementation of a distributed storage using Flowchain and IPFS open source technologies.
 
-In the Flowchain network, hybrid node (aka. edge node) miners can join the Flowchain mining pool to broadcast puzzles to IoT devices. Please read [Flowchain](https://flowchain.co) for more information.
+In the Flowchain network, hybrid node (aka. edge node) miners can join the Flowchain mining pool to broadcast puzzles to IoT devices. The flowchain-hybrid app is built upon [flowchain-ledger](https://github.com/flowchain/flowchain-ledger), the distributed ledger technloogy by Flowchain. Please read [Flowchain](https://flowchain.co) for more information.
 
 # Prerequisite
 
