@@ -127,6 +127,12 @@ This work is based on the research papers.
 } 
 ```
 
+# Community
+
+* [Telegram - Announcements](https://t.me/FlowchainAnnouncements)
+* [Facebook Page](https://facebook.com/flowchain)
+* [Telegram - Group Chat (zh)](https://t.me/joinchat/J7T4nQ_lj94GhprVbHOXPQ)
+
 # License
 
 Copyright (C) 2018 [Jollen Chen](https://github.com/jollen). The source code is licensed under the MIT license found in the [LICENSE](LICENSE) file.
