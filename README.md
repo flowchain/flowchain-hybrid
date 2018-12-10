@@ -59,16 +59,6 @@ The response:
 
 The response message indicates that the lambda value is ```5af90b68f9051a6fe1b5a2006cc345dbeafbf9df5d4ae8cc6399f515b51bdb19```, meaning that the entities has to solve the puzzle by this value in a fixed time interval. In short, the entity will receive *Puzzle* from peers, and the Puzzle has 8 to 10 shared works from the Ethereum pool.
 
-# Submit Transactions
-
-Use `flowchain-ledger` to submit transactions.
-
-```
-var PeerNode = require('flowchain-ledger').PeerNode;
-var node = new PeerNode();;
-node.submit(data);
-```
-
 # Bibliography
 
 This work is based on the research paper.
