@@ -28,7 +28,9 @@ var TAG = 'Hybrid';
 var Log = require('./Log');
 
 /**
- * Start the miner
+ * Start the miner.
+ *
+ * The flowchain hybrid node is also the miner of digital assets 
  */
 var Miner = require('./ppki');
 var miner = new Miner({
@@ -53,6 +55,7 @@ var miner = new Miner({
  * Flowchain Ledger IoT Node
  */
 var PeerNode = require('flowchain-ledger').PeerNode;
+var BootNode = require('flowchain-ledger').BootNode;
 
 /**
  * IPFS Client
@@ -73,10 +76,10 @@ var wotcity = require('./wotcity');
 /**
  * Create a WoT.City application singleton instance.
  */
-var app = wotcity({ host: process.env.HOST, port: 8100 });
+var app = wotcity({ host: process.env.REST_API_HOST || '0.0.0.0', port: process.env.REST_API_PORT || 8100 });
 
 // Flowchain Ledger
-app.node = new PeerNode();;
+app.node = new PeerNode();
 
 // Create an IPFS client instance
 app.ipfs = IpfsApi({

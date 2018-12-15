@@ -77,6 +77,15 @@ var onConnect = function(socketId, server) {
 
 var onClose = function() {
   LOGI('Connection closed');
+  setTimeout(function() {
+    LOGI('Reconnecting...');
+
+    var id = this.updatedOptions.serverId;
+    var server = this.updatedOptions.servers[id];
+
+    connect.call(this, id, server, this.updatedOptions.onConnect);
+
+  }.bind(this), 3000);
 };
 
 var onError = function(error) {
@@ -137,6 +146,14 @@ var setCurrentWork = function(work) {
     gCurrentWork = workObject;
 };
 
+var gCurrentBlock = {};
+var setCurrentBlock = function(block) {
+    gCurrentBlock = block;
+};
+var getCurrentBlock = function() {
+  return gCurrentBlock;
+};
+
 /*
  * Socket client
  */
@@ -184,9 +201,12 @@ var onData = function(payload) {
         var sSeedHash = result[1];
         var sShareTarget = result[2];
 
-        var blocks = lambda.prepreVirtualBlocks(payload);
+        // Find a valid block
+        var block = lambda.prepreBlock(payload);
+        setCurrentBlock(block);
 
-        client.submitVirtualBlocks(blocks, result);        
+        // Insert virtual blocks to the valid block
+        client.prepareToSendBlocks( getCurrentBlock() );
     }
 }
 
@@ -224,8 +244,11 @@ Client.prototype.start = function(appServer, options)
 
 Client.prototype.startClientWithAppServer = function(appServer, updatedOptions)
 {
+    var self = this;
     var workObject = new WorkObject();    
     this.workObjects.push(workObject);
+
+    this.updatedOptions = updatedOptions;
 
     var id = updatedOptions.serverId;
     var server = updatedOptions.servers[id];
@@ -248,7 +271,7 @@ Client.prototype.startClientWithAppServer = function(appServer, updatedOptions)
     	});
     	this.socket[id].on('close', function() {
       		if (updatedOptions.onClose) 
-        		updatedOptions.onClose();
+        		updatedOptions.onClose.call(self);
       		updatedOptions = {};
     	});
 
@@ -262,6 +285,14 @@ Client.prototype.startClientWithAppServer = function(appServer, updatedOptions)
     }, function() {
       LOGI('Hybrid node API server started on',  updatedOptions.apiServer.host, 'at port', updatedOptions.apiServer.port);
     });    
+}
+
+Client.prototype.reconnect = function()
+{
+  var id = this.updatedOptions.serverId;
+  var server = this.updatedOptions.servers[id];
+
+  connect.call(this, id, server, this.updatedOptions.onConnect);
 }
 
 Client.prototype.shutdown = function() 
@@ -281,39 +312,42 @@ Client.prototype.submit = function(payload, socketId) {
  */
 var gPendingVirtualBlocks = [];
 
-Client.prototype.submitVirtualBlocks = function(vBlocks, result)
+/**
+ *
+ * Example:
+ *
+ *   Client.submitVirtualBlocks({
+ *        height: block.no,
+ *        merkleRoot: key,
+ *        miner: {
+ *            id: req.node.id,
+ *            // add lambda and puzzle solutions
+ *        }
+ *   });  
+ */
+Client.prototype.submitVirtualBlocks = function(vBlocks)
 {
   if (typeof vBlocks === 'undefined') {
     return;
   }
-
-  if (typeof vBlocks === 'object' && vBlocks.length > 0) {
+console.log(JSON.stringify(vBlocks));
+  if (typeof vBlocks === 'object' && vBlocks.length > 0) {    
     gPendingVirtualBlocks.push(vBlocks);
-    return this.prepareToSendBlocks(vBlocks, result);
+
+    return 0;
   }
+
+  return -1;
 }
 
-Client.prototype.prepareToSendBlocks = function(blocks, result)
+Client.prototype.prepareToSendBlocks = function(block)
 {
-    var sHeaderHash = result[0];
-    var sSeedHash = result[1];
-    var sShareTarget = result[2];  
-    var result  = {
-      id: 1,
-      jsonrpc: '2.0',
-      method: 'eth_submitWork',
-      params: [
-        sHeaderHash,
-        sSeedHash,
-        // the shared difficulty from the mining pool
-        sShareTarget
-      ],
-      miner: '',
-      virtualBlocks: blocks,
-      txs: []
-    };
+    var virtual_blocks = gPendingVirtualBlocks;
 
-    this.sendVirtualBlocks(result);
+    // Insert virtual blocks to current valid block
+    var result = lambda.appendVirtualBlocks(block, virtual_blocks);
+
+    return this.sendVirtualBlocks(result);
 };
 
 /*
@@ -325,8 +359,9 @@ Client.prototype.sendVirtualBlocks = function(result) {
       var id = this.ids[key];
       result['miner'] = id;
 
+
       for (var i = 0; i < gPendingVirtualBlocks.length; i++) {
-        result['txs'][i] = gPendingVirtualBlocks[i];
+        //result['txs'][i] = gPendingVirtualBlocks[i];
       }
       
       this.socket[key].write(stratumSerialize(result));
@@ -334,6 +369,8 @@ Client.prototype.sendVirtualBlocks = function(result) {
 
     // Clear cache
     gPendingVirtualBlocks = [];
+
+    return 0;
 }
 
 module.exports = Client;
