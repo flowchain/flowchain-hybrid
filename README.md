@@ -65,6 +65,22 @@ The response:
 
 The response message indicates that the lambda value is ```5af90b68f9051a6fe1b5a2006cc345dbeafbf9df5d4ae8cc6399f515b51bdb19```, meaning that the entities has to solve the puzzle by this value in a fixed time interval. In short, the entity will receive *Puzzle* from peers, and the Puzzle has 8 to 10 shared works from the Ethereum pool.
 
+## Configuration
+
+The system configurations consist of 4 environment variables:
+
+* `PROXY_PORT` (Default: 8800): The web proxy server port number which *will be removed* in the coming version.
+* `REST_PORT` (Default: 8100): The REST APIs of the hybrid node which will be programmable in the coming version by using Flowchain SDK.
+* `API_PORT` (Default: 55752): The port number of the mining server.
+* `PORT` (Default: 9000): The port number of the p2p node.
+
+```
+export PROXY_PORT=9800
+export REST_PORT=9100
+export API_PORT=55753
+export PORT=9000
+```
+
 # Roadmap
 
 Flowchain team is working on the "v1.0" public beta which we will launch along with the Flowchain public testnet. During the v1.0 development, the Flowchain project will open source by five stages.
