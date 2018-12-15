@@ -330,7 +330,7 @@ Client.prototype.submitVirtualBlocks = function(vBlocks)
   if (typeof vBlocks === 'undefined') {
     return;
   }
-console.log(JSON.stringify(vBlocks));
+
   if (typeof vBlocks === 'object' && vBlocks.length > 0) {    
     gPendingVirtualBlocks.push(vBlocks);
 
