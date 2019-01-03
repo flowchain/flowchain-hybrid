@@ -92,8 +92,35 @@ Lambda.prototype._setWork = function(work)
 
 var sBlockHeight = 1;
 
-Lambda.prototype.submitBlocks = function(blocks)
+Lambda.prototype.prepreBlock = function(work)
 {
+    this._setWork(work);
+    // The miner is synchronous
+    var hash = this._miner();
+
+    //LOGI("Received new job #" + sHeaderHash.substr(0, 8));
+
+    LOGI(chalk.red('Block ' + sBlockHeight + ' found') + ' 0x' + hash.toString(16));
+    sBlockHeight++;
+
+    var diff = stratumDeserialize(work).result[2];
+    LOGI('Target difficulty: ' + diff)
+    
+    var block = {
+      height: sBlockHeight,
+      blockHash: hash.toString(16),
+      nonce: this.nonce,
+      lambda: this.getLambdaString(),
+      puzzle: JSON.parse(this.getPuzzle())
+    };
+
+    return block;
+};
+
+Lambda.prototype.appendVirtualBlocks = function(block, virtual_blocks)
+{
+    block['merkle_dag'] = virtual_blocks;
+
     var result  = {
       id: 1,
       jsonrpc: '2.0',
@@ -105,33 +132,11 @@ Lambda.prototype.submitBlocks = function(blocks)
         this.sShareTarget
       ],
       miner: '',
-      virtualBlocks: blocks,
-      txs: []
+      block: block,
+      txs: virtual_blocks
     };
 
-    client.submitBlocks(result);
-};
-
-Lambda.prototype.prepreVirtualBlocks = function(work)
-{
-    this._setWork(work);
-    // The miner is synchronous
-    var hash = this._miner();
-
-    //LOGI("Received new job #" + sHeaderHash.substr(0, 8));
-
-    LOGI(chalk.red('Block ' + sBlockHeight + ' found') + ' 0x' + hash.toString(16));
-    sBlockHeight++;
-
-    var virtualBlocks = [{
-      height: sBlockHeight,
-      blockHash: hash.toString(16),
-      nonce: this.nonce,
-      lambda: this.getLambdaString(),
-      puzzle: JSON.parse(this.getPuzzle())
-    }];
-
-    return virtualBlocks;
+    return result;
 };
 
 var virtualMiner = function(nonce, previousHash, seedHash) {

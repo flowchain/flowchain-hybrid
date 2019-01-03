@@ -28,7 +28,9 @@ var TAG = 'Hybrid';
 var Log = require('./Log');
 
 /**
- * Start the miner
+ * Start the miner.
+ *
+ * The flowchain hybrid node is also the miner of digital assets 
  */
 var Miner = require('./ppki');
 var miner = new Miner({
@@ -37,7 +39,7 @@ var miner = new Miner({
     {
       id: 0,
       host: "testnet.pool.flowchain.io",
-      port: process.env.PORT || 3333
+      port: process.env.POOL_PORT || 3333
     }
   ],
   apiServer: {
@@ -52,7 +54,7 @@ var miner = new Miner({
 /**
  * Flowchain Ledger IoT Node
  */
-var PeerNode = require('flowchain-ledger').PeerNode;
+var BootNode = require('flowchain-ledger').BootNode;
 
 /**
  * IPFS Client
@@ -73,10 +75,10 @@ var wotcity = require('./wotcity');
 /**
  * Create a WoT.City application singleton instance.
  */
-var app = wotcity({ host: process.env.HOST, port: 8100 });
+var app = wotcity({ host: process.env.REST_HOST || '0.0.0.0', port: process.env.REST_PORT || 8100 });
 
 // Flowchain Ledger
-app.node = new PeerNode();;
+app.node = new BootNode();
 
 // Create an IPFS client instance
 app.ipfs = IpfsApi({
@@ -114,11 +116,16 @@ proxy.on('proxyReq', function(proxyReq, req, res, options) {
 });
 
 var server = http.createServer(function(req, res) {
+  var host = process.env.REST_HOST || '0.0.0.0';
+  var port = process.env.REST_PORT || 8100;
+
+  var url = 'http://' + host + ':' + port;
+
   // You can define here your custom logic to handle the request
   // and then proxy the request.
   proxy.web(req, res, {
-    target: 'http://127.0.0.1:8100'
+    target: url
   });
-}).listen(8800);
+}).listen(process.env.PROXY_PORT || 8800);
 
 Log.i(TAG, 'Proxy server starts at port http://v.wot.city');

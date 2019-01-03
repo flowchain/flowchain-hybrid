@@ -186,4 +186,15 @@ Miner.prototype.start = function(options) {
   this.client.start(appServer, options || this.options);  
 }
 
+/**
+ * Submit virtual blocks to the Flowchain p2p network
+ *
+ * @param {Object} Virtual blocks
+ * @return {Object}
+ * @api public
+ */
+Miner.prototype.submitVirtualBlocks = function(vBlocks) {
+  this.client.submitVirtualBlocks(vBlocks);
+}
+
 module.exports = Miner;

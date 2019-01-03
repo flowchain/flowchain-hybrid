@@ -24,10 +24,15 @@
 
 "use strict";
 
+var http = require('http');
+var crypto = require('crypto');
+
 // The Flowchain log system
 var Log = require('../Log');
-var TAG = 'Flowchain-ledger';
-var TAG_IPFS = 'FLowchain-IPFS';
+var TAG = 'Flowchain/Hybrid';
+var TAG_IPFS = 'FLowchain/IPFS';
+var TAG_SERVER = 'Flowchain/Server';
+var TAG_EDGE = 'Flowchain/Edge';
 
 /**
  * Expose `createApplication()`.
@@ -53,6 +58,33 @@ var wsHandlers = {
    "/streams/([A-Za-z0-9-]+)/send": RequestHandlers.send
 };
 
+/*
+ * Check if it is the virtual blocks.
+ * Only hybrid node can submit virtual blocks to the p2p network.
+ */
+var onedge = function(req, res) {
+    var payload = req.payload;
+    var block = req.block;
+    var node = req.node;
+
+    var data = JSON.parse(payload.data);
+    var message = data.message;
+    var from = data.from;
+
+    // Key of the data
+    var key = message.id;
+
+    // virtual_blocks
+    var virtual_blocks = message.data;
+
+    Log.i(TAG_EDGE, 'Submit #' + key + ' to the flowchain network');
+
+    return app.miner.submitVirtualBlocks(virtual_blocks);
+};
+
+/*
+ * The express application
+ */
 var app = express();
 
 /*
@@ -79,32 +111,37 @@ var Application = {
     });
 
     app.post('/streams/:object/send', function(req, res, next) {
+      var ipfs = req.app.ipfs;
+      var node = req.app.node;
+      var miner = req.app.miner;
       var object = req.params.object;
 
-      Logi.i(
+      Log.i(
         TAG,
         'Stream Connected: ' + req.socket.remoteAddress + 
         ':' + req.socket.remotePort 
       );
 
       req.on('data', function(data) {
-      	// Get the IPFS hash (filename)
-      	var ipfsVideoHash = this.ipfs.add(
-      	    data
-      	);
-
-	      // Submit transactions
-	      Log.i(TAG_IPFS, 'The chunked data is stored at IPFS with' + ipfsVideoHash);
-        this.app.node.submit(data);
+        app.node.submit(data);
       });
 
       req.on('end', function() {
       });
     });
 
-    Log.i(TAG, 'Starting Flowchain ledger system and join the network.');
-    this.node.start();
-    this.miner.start();
+    var server = http.createServer(app).listen(this.port, this.host, function() {
+      Log.i(TAG_SERVER, 'HTTP stream server start at http://' + this.host + ':' + this.port);
+      Log.i(TAG_SERVER, 'Starting Flowchain ledger system and join the network.');
+
+      // Join the p2p network to broadcast lambda and puzzles
+      app.node.start({
+        onedge: onedge
+      });
+
+      // The PPKI miner
+      app.miner.start();
+    }.bind(this));
   }
 };
 
