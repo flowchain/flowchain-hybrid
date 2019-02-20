@@ -373,4 +373,10 @@ Client.prototype.sendVirtualBlocks = function(result) {
     return 0;
 }
 
+Client.prototype.setMiner = function(miner) {
+  for (var key in this.ids) {
+    this.ids[key] = miner;
+  }
+}
+
 module.exports = Client;

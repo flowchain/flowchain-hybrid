@@ -48,7 +48,8 @@ var miner = new Miner({
   },
   // the server id to use    
   serverId: 0,
-  worker: "flowchain-testnet"
+  worker: "flowchain-testnet",
+  miner: '[PLEASE PUT YOUR SIGNED MINER ADDRESS HERE]'
 });
 
 /**
@@ -128,4 +129,4 @@ var server = http.createServer(function(req, res) {
   });
 }).listen(process.env.PROXY_PORT || 8800);
 
-Log.i(TAG, 'Proxy server starts at port http://v.wot.city');
+Log.i(TAG, 'Proxy server starts at port 8800');

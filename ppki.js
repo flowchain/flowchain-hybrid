@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+var chalk = require('chalk');
 var trim = require('lodash/trim');
 var lambda = require('./consensus/lambda');
 var Client = require('./consensus/client');
@@ -183,7 +184,13 @@ function Miner(options) {
 }
 
 Miner.prototype.start = function(options) {
-  this.client.start(appServer, options || this.options);  
+  this.client.start(appServer, options || this.options); 
+
+  // Update client configs
+  if (this.options && this.options.miner) {
+   LOGI(chalk.red('Set miner [' + this.options.miner + ']'));
+   this.client.setMiner(this.options.miner);
+  }   
 }
 
 /**
