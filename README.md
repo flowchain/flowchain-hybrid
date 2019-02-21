@@ -83,7 +83,7 @@ export PORT=9000
 
 ## Block Rewards
 
-Please update the wallet address of the miner and [Sign and Submit Validator Miner Program](https://github.com/flowchain/crypto-night/wiki/TestNet-User-Guide) in order to receive block rewards.
+Please update the wallet address of the miner in `index.js` and [Sign and Validating Miner Address](https://github.com/flowchain/crypto-night/wiki/TestNet-User-Guide) in order to receive block rewards.
 
 ```
 var miner = new Miner({
