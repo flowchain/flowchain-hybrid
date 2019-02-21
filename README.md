@@ -81,6 +81,31 @@ export API_PORT=55753
 export PORT=9000
 ```
 
+## Block Rewards
+
+Please update the wallet address of the miner and [Sign and Submit Validator Miner Program](https://github.com/flowchain/crypto-night/wiki/TestNet-User-Guide) in order to receive block rewards.
+
+```
+var miner = new Miner({
+  // Use Flowchain testnet
+  servers: [
+    {
+      id: 0,
+      host: "testnet.pool.flowchain.io",
+      port: process.env.POOL_PORT || 3333
+    }
+  ],
+  apiServer: {
+    host: process.env.API_HOST || '127.0.0.1',
+    port: process.env.API_PORT || '55752'
+  },
+  // the server id to use    
+  serverId: 0,
+  worker: "flowchain-testnet",
+  miner: '[PLEASE PUT YOUR SIGNED MINER ADDRESS HERE]'
+});
+```
+
 # Roadmap
 
 Flowchain team is working on the "v1.0" public beta which we will launch along with the Flowchain public testnet. During the v1.0 development, the Flowchain project will open source by five stages.
