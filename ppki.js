@@ -29,6 +29,19 @@ const {
   utils,
   LOGI
 } = require('./utils');
+const {
+  stratumSerialize,
+  stratumDeserialize,
+  StratumSubscribe  
+} = require('./libs/stratum');
+const {
+  getCurrentWorkId,
+  getCurrentWorkSocketId,
+  getCurrentWork,
+  setCurrentWork,
+  setCurrentBlock,
+  getCurrentBlock  
+} = require('./consensus/work');
 
 /*
  * Proxy

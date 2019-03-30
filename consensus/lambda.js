@@ -90,6 +90,27 @@ Lambda.prototype._setWork = function(work)
     this.sShareTarget = workObject.result[2];	
 }
 
+Lambda.prototype.setWorkForResult = function(work)
+{
+    this._setWork(work);
+    // The miner is synchronous
+    var hash = this._miner();
+
+    //LOGI("Received new job #" + sHeaderHash.substr(0, 8));
+
+    LOGI(chalk.red('Block ' + sBlockHeight + ' found') + ' 0x' + hash.toString(16));
+    sBlockHeight++;
+
+    var result = {
+      height: sBlockHeight,
+      nonce: this.nonce,
+      lambda: this.getLambdaString(),
+      puzzle: JSON.parse(this.getPuzzle())
+    };
+
+    return stratumSerialize(result);
+};
+
 var sBlockHeight = 1;
 
 Lambda.prototype.prepreBlock = function(work)
