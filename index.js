@@ -24,6 +24,9 @@
 
 'use strict';
 
+/**
+ * Config the logger system.
+ */
 var TAG = 'Hybrid';
 var Log = require('./Log');
 
@@ -34,7 +37,7 @@ var Log = require('./Log');
  */
 var Miner = require('./ppki');
 var miner = new Miner({
-  // Use Flowchain testnet
+  // Default use Flowchain testnet
   servers: [
     {
       id: 0,
@@ -69,19 +72,26 @@ var http = require('http'),
     httpProxy = require('http-proxy');
 
 /**
- * The WoT.City main class.
+ * The WoT.City servient library.
  */
 var wotcity = require('./wotcity');
 
 /**
  * Create a WoT.City application singleton instance.
  */
-var app = wotcity({ host: process.env.REST_HOST || '0.0.0.0', port: process.env.REST_PORT || 8100 });
+var app = wotcity({ 
+  host: process.env.REST_HOST || '0.0.0.0', 
+  port: process.env.REST_PORT || 8100 
+});
 
-// Flowchain Ledger
+/**
+ * Create a Flowchain Ledger application singleton instance.
+ */
 app.node = new BootNode();
 
-// Create an IPFS client instance
+/**
+ * Create an IPFS client instance.
+ */
 app.ipfs = IpfsApi({
   host: 'localhost',
   port: 5001,
@@ -91,31 +101,37 @@ app.ipfs = IpfsApi({
   }
 });
 
-// The hybrid node miner
+/**
+ * Setup the the Flowchain Hybrid node.
+ */
 app.miner = miner;
 
 /**
- * Start the Video broker server.
+ * Start the Flowchain Hybrid node.
  */
-Log.i(TAG, 'Starting Flowchain/IPFS mining node...');
+Log.i(TAG, 'Starting Flowchain Hybrid node...');
 app.start();
 
 /**
- * Start the proxy server.
+ * Start a proxy server to config HTTP headers. For better performance of HTTP 206 request,
+ * some headers of the HTTP server response should be removed.
  */
 var proxy = httpProxy.createProxyServer({});
 
 proxy.on('proxyReq', function(proxyReq, req, res, options) {
-  proxyReq.setHeader("Transfer-Encoding", "chunked");
+  proxyReq.setHeader('Transfer-Encoding', 'chunked');
   proxyReq.setHeader("Connection", "close");
  
-  proxyReq.removeHeader("Content-Length");
-  proxyReq.removeHeader("Accept-Encoding");
-  proxyReq.removeHeader("Accept-Language");
-  proxyReq.removeHeader("Content-Type");
-  proxyReq.removeHeader("Referer");
+  proxyReq.removeHeader('Content-Length');
+  proxyReq.removeHeader('Accept-Encoding');
+  proxyReq.removeHeader('Accept-Language');
+  proxyReq.removeHeader('Content-Type');
+  proxyReq.removeHeader('Referer');
 });
 
+/**
+ * Start a HTTP web server and proxy the requests.
+ */
 var server = http.createServer(function(req, res) {
   var host = process.env.REST_HOST || '0.0.0.0';
   var port = process.env.REST_PORT || 8100;

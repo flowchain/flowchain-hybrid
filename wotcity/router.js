@@ -72,7 +72,10 @@ var pathToRegExp = function(path) {
 /**
  * Initialize a new `WebsocketBroker` with the given `options`.
  *
- * @param {Object} options
+ * @param {Object} pathname
+ * @param {Object} connection
+ * @param {Object} wsHandlers
+ * @param {Object} clients   
  * @api putblic
  */
 

@@ -40,7 +40,7 @@ var TAG_EDGE = 'Flowchain/Edge';
  if (typeof(module) != "undefined" && typeof(exports) != "undefined")
   exports = module.exports = createApplication;
 
- /**
+/**
  * Module dependencies.
  */
 var RequestHandlers = require("./requestHandlers")
@@ -52,15 +52,20 @@ var RequestHandlers = require("./requestHandlers")
   , cors = require('express-cors');
 
 /**
- * Websocket URL Router
+ * The Websocket URL router.
  */
 var wsHandlers = {
    "/streams/([A-Za-z0-9-]+)/send": RequestHandlers.send
 };
 
-/*
- * Check if it is the virtual blocks.
- * Only hybrid node can submit virtual blocks to the p2p network.
+/**
+ * The `onedge` event handler receives messages from the p2p network and
+ * submits virtual blocks to the private blockchain. 
+ *
+ * @param {Object} req The client `request` object
+ * @param {Object} res The server `response` object
+ * @return {Object}
+ * @api public
  */
 var onedge = function(req, res) {
     var payload = req.payload;
@@ -82,15 +87,16 @@ var onedge = function(req, res) {
     return app.miner.submitVirtualBlocks(virtual_blocks);
 };
 
-/*
+/**
  * The express application
  */
 var app = express();
 
-/*
- * Prototype and Class
+/**
+ * The main application class which provides rest APIs.
  */
 var Application = {
+
   /**
    * Start a Flowchain Ledger server.
    *
@@ -103,6 +109,7 @@ var Application = {
     app.miner = this.miner;
 
     app.use(cors());
+
     app.use(function(req, res, next) {
       // Handling flowchain data chunks
       res.setHeader('Transfer-Encoding', 'chunked');
@@ -134,13 +141,19 @@ var Application = {
       Log.i(TAG_SERVER, 'HTTP stream server start at http://' + this.host + ':' + this.port);
       Log.i(TAG_SERVER, 'Starting Flowchain ledger system and join the network.');
 
-      // Join the p2p network to broadcast lambda and puzzles
+      /**
+       * Start the IoT node and join the p2p network.
+       * When success, the IoT node will begin to broadcast lambda and puzzles.
+       */
       app.node.start({
         onedge: onedge
       });
 
-      // The PPKI miner
+      /**
+       * Start the PPKI miner
+       */
       app.miner.start();
+
     }.bind(this));
   }
 };
