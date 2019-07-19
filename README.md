@@ -106,6 +106,29 @@ var miner = new Miner({
 });
 ```
 
+# API Reference
+
+## *miner*.submitVirtualBlocks(blocks)
+
+| Param | Type | Description |
+| --- | --- | --- |
+| blocks | <code>Array</code> | Virtual blocks |
+
+Submit virtual blocks to the private blockchain network. The array contains objects of virtual blocks. Below is the data structure of a virtual block object: 
+
+```
+{
+  height: <the blockchain height>,
+  merkleRoot: <the merkle root hash>,
+  miner: {
+      id: <the node ID>,
+      lambda: <the lambda string>,
+      puzzle: <the puzzle solutions>
+  }
+}
+```
+
+
 # Roadmap
 
 Flowchain team is working on the "v1.0" public beta which we will launch along with the Flowchain public testnet. During the v1.0 development, the Flowchain project will open source by five stages.
