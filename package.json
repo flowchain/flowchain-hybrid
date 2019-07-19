@@ -13,6 +13,7 @@
     "body-parser": "^1.18.3",
     "chalk": "^2.3.0",
     "cookies": "^0.7.3",
+    "diff": "^4.0.1",
     "express": "^4.16.4",
     "express-cors": "0.0.3",
     "flowchain-ledger": "^0.3.5",
