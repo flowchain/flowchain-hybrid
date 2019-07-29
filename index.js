@@ -58,7 +58,7 @@ var miner = new Miner({
 /**
  * Flowchain Ledger IoT Node
  */
-var BootNode = require('flowchain-ledger').BootNode;
+var BootNode = require('flowchain.js').BootNode;
 
 /**
  * IPFS Client
