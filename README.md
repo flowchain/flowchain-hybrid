@@ -191,11 +191,10 @@ This work is based on the research papers.
 } 
 ```
 
-# Community
+# Resource
 
-* [Telegram - Announcements](https://t.me/FlowchainAnnouncements)
-* [Facebook Page](https://facebook.com/flowchain)
-* [Telegram - Group Chat (zh)](https://t.me/joinchat/J7T4nQ_lj94GhprVbHOXPQ)
+* [Flowchain](https://flowchain.org)
+  
 
 # License
 
